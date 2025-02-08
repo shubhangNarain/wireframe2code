@@ -7,19 +7,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-
+//@ts-ignore
+import uuid4 from "uuid4";
 import { Textarea } from "@/components/ui/textarea";
-import { CloudUpload, Wand, X } from "lucide-react";
+import { storage } from "@/configs/firebaseConfig";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { CloudUpload, Loader2Icon, Wand, X } from "lucide-react";
 import Image from "next/image";
 import React, { ChangeEvent, useState } from "react";
+import { useAuthContext } from "@/app/provider";
+import axios from "axios";
+import { useRouter } from "next/navigation";
+import Constants from "@/data/Constants";
 
 function ImageUpload() {
-  const AIModelList = [
-    { name: "Google Gemini", icon: "/google.png" },
-    { name: "Llama by Meta", icon: "/meta.png" },
-    { name: "Deepseek", icon: "/deepseek.png" },
-  ];
   const [previewUrl, setPreviewUrl] = useState<string | null>();
+  const [file, setFile] = useState<any>();
+  const [model, setModel] = useState<string>();
+  const [description, setDescription] = useState<string>();
+  const { user } = useAuthContext();
+  const router = useRouter();
+  const [loading, setLoading] = useState<boolean>(false);
 
   const onImageSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -27,15 +35,47 @@ function ImageUpload() {
     if (files) {
       console.log(files[0]);
       const imageUrl = URL.createObjectURL(files[0]);
+      setFile(files[0]);
       setPreviewUrl(imageUrl);
     }
+  };
+
+  const onConvertToCodeButtonClick = async () => {
+    if (!file || !model || !description) {
+      alert("Please fill all fields");
+      return;
+    }
+    setLoading(true);
+    // saving image to firebase
+    const fileName = Date.now() + ".png";
+    const imageRef = ref(storage, "wireframe2code-web/" + fileName);
+    await uploadBytes(imageRef, file).then((resp) =>
+      console.log("Image uploaded:", resp)
+    );
+
+    const imageUrl = await getDownloadURL(imageRef);
+    console.log("Image URL:", imageUrl);
+
+    const uid = uuid4();
+    console.log("Uploaded id:", uid);
+    // save image to db
+    const result = await axios.post("/api/wireframe-to-code", {
+      uid: uid,
+      imageUrl: imageUrl,
+      model: model,
+      description: description,
+      email: user?.email,
+    });
+    console.log("Result:", result);
+    setLoading(false);
+    router.push("/view-code/" + uid);
   };
 
   return (
     <div className="mt-10">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {!previewUrl ? (
-          <div className="flex flex-col items-center justify-center p-7 border border-black border-dashed rounded-md shadow-md">
+          <div className="flex flex-col items-center justify-center p-7 border border-gray-400 border-dashed rounded-md shadow-lg">
             <CloudUpload className="h-10 w-10 text-primary" />
             <h2 className="font-bold text-lg">Upload Image</h2>
             <p className="text-gray-400 mt-3">
@@ -73,14 +113,14 @@ function ImageUpload() {
         )}
         <div className="p-7 border shadow-md rounded-lg">
           <h2 className="font-bold text-lg">Select AI Models</h2>
-          <Select>
+          <Select onValueChange={(val) => setModel(val)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Select AI Model" />
             </SelectTrigger>
             <SelectContent>
-              {AIModelList.map((model, idx) => (
-                <SelectItem value={model.name}>
-                  <div key={idx} className="flex items-center gap-2">
+              {Constants?.AIModelList.map((model, idx) => (
+                <SelectItem key={idx} value={model.name}>
+                  <div className="flex items-center gap-2">
                     <Image
                       src={model.icon}
                       alt={model.name}
@@ -98,14 +138,18 @@ function ImageUpload() {
             Enter Description about your wireframe
           </h2>
           <Textarea
+            onChange={(e) => setDescription(e?.target.value)}
             className="mt-3 h-[200px]"
             placeholder="Write about your design/webpage"
           />
         </div>
       </div>
       <div className="mt-10 flex items-center justify-center">
-        <Button>
-          <Wand />
+        <Button
+          onClick={onConvertToCodeButtonClick}
+          disabled={loading ? true : false}
+        >
+          {loading ? <Loader2Icon className="animate-spin" /> : <Wand />}
           Convert to code
         </Button>
       </div>
