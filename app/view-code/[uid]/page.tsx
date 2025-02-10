@@ -1,11 +1,14 @@
 "use client";
+import AppHeader from "@/app/_components/AppHeader";
 import Constants from "@/data/Constants";
 import axios from "axios";
 import { LoaderCircle } from "lucide-react";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import SelectionDetail from "../_components/SelectionDetail";
+import CodeEditor from "../_components/CodeEditor";
 
-interface RECORD {
+export interface RECORD {
   id: number;
   description: string;
   code: any;
@@ -17,19 +20,26 @@ interface RECORD {
 function ViewCode() {
   const { uid } = useParams();
   const [loading, setLoading] = useState<boolean>(false);
-  const [codeResp, setCodeResp] = useState('');
+  const [codeResp, setCodeResp] = useState("");
+  const [record, setRecord] = useState<RECORD | null>(null as RECORD | null);
 
   useEffect(() => {
     uid && getRecordInfo();
   }, [uid]);
+
+  // useEffect(() => {
+  //   console.log("Record Updated:", record);
+  // }, [record]);
 
   const getRecordInfo = async () => {
     setLoading(true);
     const result = await axios.get("/api/wireframe-to-code/?uid=" + uid);
     console.log(result.data);
     const resp = result?.data;
+    setRecord(result?.data)
+    console.log("RECORD:",record)
     if (resp.code == null) {
-      generateCode(resp);
+      // generateCode(resp);
     }
     if (resp?.error) {
       console.error("Error:", resp.error);
@@ -59,7 +69,11 @@ function ViewCode() {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const text = (decoder.decode(value)).replace('javascript','').replace('```typescript```', '').replace('```', '');
+      const text = decoder
+        .decode(value)
+        .replace("javascript", "")
+        .replace("```typescript```", "")
+        .replace("```", "");
       console.log(text);
       setCodeResp((prev) => prev + text);
     }
@@ -68,10 +82,17 @@ function ViewCode() {
 
   return (
     <div>
-      View Code
-      {loading && <LoaderCircle className="animate-spin" />}
-
-      <p>{codeResp}</p>
+      <AppHeader hideSidebar={true} />
+      <div className="grid grid-cols-1 md:grid-cols-5 p-5 gap-10">
+        <div>
+          {/* Selection Details */}
+          <SelectionDetail record={record}/>
+        </div>
+        <div className="col-span-4">
+          {/* Code Editor */}
+          <CodeEditor />
+        </div>
+      </div>
     </div>
   );
 }
