@@ -19,6 +19,7 @@ import { useAuthContext } from "@/app/provider";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import Constants from "@/data/Constants";
+import { toast } from "sonner";
 
 function ImageUpload() {
   const [previewUrl, setPreviewUrl] = useState<string | null>();
@@ -66,7 +67,12 @@ function ImageUpload() {
       description: description,
       email: user?.email,
     });
-    console.log("Result:", result);
+    if (result.data?.error) {
+      console.log("Error saving to db:", result.data?.error);
+      toast("Not enough Credits!");
+      setLoading(false);
+      return;
+    }
     setLoading(false);
     router.push("/view-code/" + uid);
   };

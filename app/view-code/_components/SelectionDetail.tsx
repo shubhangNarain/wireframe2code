@@ -3,11 +3,13 @@ import { RECORD } from "../[uid]/page";
 import Image from "next/image";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { RefreshCcw } from "lucide-react";
 
-function SelectionDetail({ record }: any) {
+function SelectionDetail({ record, regenerateCode, isReady }: any) {
   return (
     record && (
-      <div className="p-5 bg-gray-200 h-[80vh] rounded-lg">
+      <div className="p-5 bg-gray-200 rounded-lg">
         <h2 className="font-bold my-2">Wireframe:</h2>
         <Image
           src={record?.imageUrl}
@@ -30,6 +32,12 @@ function SelectionDetail({ record }: any) {
           disabled={true}
           className="bg-white h-[180px]"
         />
+
+        <Button className="mt-7 w-full" onClick={regenerateCode} disabled={!isReady}>
+          {" "}
+          <RefreshCcw />
+          Regenerate Code
+        </Button>
       </div>
     )
   );
