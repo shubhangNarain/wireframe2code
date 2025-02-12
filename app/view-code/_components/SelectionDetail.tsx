@@ -33,9 +33,12 @@ function SelectionDetail({ record, regenerateCode, isReady }: any) {
           className="bg-white h-[180px]"
         />
 
-        <Button className="mt-7 w-full" onClick={regenerateCode} disabled={!isReady}>
-          {" "}
-          <RefreshCcw />
+        <Button
+          className="mt-7 w-full flex items-center gap-2"
+          onClick={regenerateCode}
+          disabled={!isReady}
+        >
+          <RefreshCcw className="w-4 h-4" />
           Regenerate Code
         </Button>
       </div>

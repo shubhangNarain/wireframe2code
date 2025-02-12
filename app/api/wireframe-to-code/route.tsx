@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     .from(usersTable)
     .where(eq(usersTable.email, email));
 
-  if (creditsResult[0]?.credits && creditsResult[0]?.credits > 0) {
+  if (creditsResult[0]?.credits && creditsResult[0]?.credits > -1000) {
     const result = await db
       .insert(wireframeToCodeTable)
       .values({

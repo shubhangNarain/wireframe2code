@@ -3,7 +3,7 @@ export const usersTable = pgTable("users", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
   email: varchar({ length: 255 }).notNull().unique(),
-  credits: integer().default(0),
+  credits: integer().default(100000),
 });
 
 export const wireframeToCodeTable = pgTable("wireframe2code", {

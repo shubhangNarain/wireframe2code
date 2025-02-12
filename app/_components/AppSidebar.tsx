@@ -26,12 +26,12 @@ import { usePathname } from "next/navigation";
 
 const items = [
   {
-    title: "Workspace",
+    title: "Dashboard",
     url: "/dashboard",
     icon: Home,
   },
   {
-    title: "Design",
+    title: "My Designs",
     url: "/design",
     icon: Component,
   },
@@ -57,7 +57,7 @@ export function AppSidebar() {
             height={100}
             className="w-full h-full"
           />
-          <h2 className="text-sm text-gray-400 text-center">Build Awesome</h2>
+          <h2 className="text-sm text-gray-400 text-center">GenAI Coder</h2>
         </div>
       </SidebarHeader>
       <SidebarContent>
