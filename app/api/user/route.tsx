@@ -43,6 +43,6 @@ export async function GET(req: NextRequest) {
       .from(usersTable)
       .where(eq(usersTable.email, email));
 
-    return NextResponse.json(result[0]);
+    return NextResponse.json(JSON.parse(JSON.stringify(result[0])));
   }
 }
